@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Tensión Arterial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .user-badge {
+            background: #3ecf8e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #3ecf8e;
+            border-bottom-color: #3ecf8e;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="number"], input[type="text"], input[type="email"], input[type="password"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3ecf8e;
+        }
+
+        button {
+            background: #3ecf8e;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #35b87d;
+        }
+
+        button.danger {
+            background: #e74c3c;
+        }
+
+        button.danger:hover {
+            background: #c0392b;
+        }
+
+        button.small {
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background: #3ecf8e;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .login-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .login-screen h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #3ecf8e;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            table {
+                font-size: 14px;
+            }
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🩺 Control de Tensión Arterial</h1>
+        <p class="subtitle">Registra tus mediciones de forma privada y sincronizada</p>
+
+        <!-- Pantalla de Login -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Iniciar Sesión</h2>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <button onclick="login()">Iniciar Sesión</button>
+                <p style="margin-top: 20px; color: #666;">
+                    ¿No tienes cuenta? <a href="#" onclick="showRegister()" style="color: #3ecf8e;">Regístrate aquí</a>
+                </p>
+            </div>
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label for="registerName">Nombre</label>
+                    <input type="text" id="registerName" placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres">
+                </div>
+                <button onclick="register()">Registrarse</button>
+                <p style="margin-top: 20px; color: #666;">
+                    ¿Ya tienes cuenta? <a href="#" onclick="showLogin()" style="color: #3ecf8e;">Inicia sesión</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Pantalla de Usuario -->
+        <div id="userScreen" style="display: none;">
+            <div class="user-badge" id="userBadge"></div>
+            <button onclick="logout()" class="small danger" style="float: right;">Cerrar sesión</button>
+            <div style="clear: both;"></div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('formTab')">📝 Nueva Medición</button>
+                <button class="tab" onclick="showTab('tableTab')">📊 Mis Datos</button>
+            </div>
+
+            <!-- Formulario -->
+            <div id="formTab" class="tab-content active">
+                <div id="formAlert"></div>
+                <form id="measurementForm">
+                    <div class="form-group">
+                        <label for="sistole">1. Sístole (mmHg)</label>
+                        <input type="number" id="sistole" required min="50" max="250" placeholder="Ej: 120">
+                    </div>
+                    <div class="form-group">
+                        <label for="diastole">2. Diástole (mmHg)</label>
+                        <input type="number" id="diastole" required min="30" max="150" placeholder="Ej: 80">
+                    </div>
+                    <div class="form-group">
+                        <label for="pulse">3. Pulsaciones (lpm)</label>
+                        <input type="number" id="pulse" required min="30" max="200" placeholder="Ej: 70">
+                    </div>
+                    <button type="submit">💾 Guardar Medición</button>
+                </form>
+            </div>
+
+            <!-- Tabla -->
+            <div id="tableTab" class="tab-content">
+                <div id="tableContainer">
+                    <div class="loading">Cargando datos...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // ⚠️ IMPORTANTE: Reemplaza esto con tus credenciales de Supabase
+        const SUPABASE_URL = 'https://fqadzzoazfqqidvfgwtw.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYWR6em9hemZxcWlkdmZnd3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNTM1MzEsImV4cCI6MjEwNTkyOTUzMX0.-stlsTYFV3eEjkAzE48NaJ3xLQG_P2fSC0jlsMIuqMU
+';
+
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+
+        // Verificar si ya hay sesión iniciada
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                showUserScreen();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        // Escuchar cambios de autenticación
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                currentUser = session.user;
+                showUserScreen();
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                showLoginScreen();
+            }
+        });
+
+        // Mostrar pantalla de login
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('userScreen').style.display = 'none';
+        }
+
+        // Mostrar formulario de login
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        // Mostrar formulario de registro
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        // Iniciar sesión
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                alert('Por favor, completa todos los campos');
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Registrarse
+        async function register() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!name || !email || !password) {
+                alert('Por favor, completa todos los campos');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        name: name
+                    }
+                }
+            });
+
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Registro exitoso. Ya puedes iniciar sesión.');
+                showLogin();
+            }
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            await supabase.auth.signOut();
+        }
+
+        // Mostrar pantalla de usuario
+        async function showUserScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('userScreen').style.display = 'block';
+            
+            // Obtener nombre del usuario
+            const name = currentUser.user_metadata?.name || currentUser.email;
+            document.getElementById('userBadge').textContent = `👤 ${name}`;
+            
+            showTab('formTab');
+        }
+
+        // Cambiar entre pestañas
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'tableTab') {
+                loadMeasurements();
+            }
+        }
+
+        // Guardar medición
+        document.getElementById('measurementForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const sistole = parseInt(document.getElementById('sistole').value);
+            const diastole = parseInt(document.getElementById('diastole').value);
+            const pulse = parseInt(document.getElementById('pulse').value);
+
+            const { data, error } = await supabase
+                .from('measurements')
+                .insert({
+                    user_id: currentUser.id,
+                    sistole: sistole,
+                    diastole: diastole,
+                    pulse: pulse
+                });
+
+            if (error) {
+                alert('Error al guardar: ' + error.message);
+            } else {
+                document.getElementById('formAlert').innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ Medición guardada correctamente
+                    </div>
+                `;
+
+                this.reset();
+
+                setTimeout(() => {
+                    document.getElementById('formAlert').innerHTML = '';
+                }, 3000);
+            }
+        });
+
+        // Cargar mediciones del usuario
+        async function loadMeasurements() {
+            const { data, error } = await supabase
+                .from('measurements')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('created_at', { ascending: false });
+
+            const container = document.getElementById('tableContainer');
+
+            if (error) {
+                container.innerHTML = '<div class="alert alert-error">Error al cargar datos</div>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="no-data">📭 No hay mediciones registradas aún</div>';
+                return;
+            }
+
+            const rows = data.map(m => {
+                const date = new Date(m.created_at);
+                const dateStr = date.toLocaleDateString('es-ES');
+                const timeStr = date.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+                
+                return `
+                    <tr>
+                        <td>${dateStr}</td>
+                        <td>${timeStr}</td>
+                        <td><strong>${m.sistole}</strong> mmHg</td>
+                        <td><strong>${m.diastole}</strong> mmHg</td>
+                        <td><strong>${m.pulse}</strong> lpm</td>
+                        <td>
+                            <button class="small danger" onclick="deleteMeasurement(${m.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Sístole</th>
+                            <th>Diástole</th>
+                            <th>Pulsaciones</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Eliminar medición
+        async function deleteMeasurement(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta medición?')) return;
+            
+            const { error } = await supabase
+                .from('measurements')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert('Error al eliminar: ' + error.message);
+            } else {
+                loadMeasurements();
+            }
+        }
+
+        // Inicializar al cargar la página
+        checkSession();
+    </script>
+</body>
+</html>
